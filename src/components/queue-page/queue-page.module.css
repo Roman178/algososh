@@ -1,0 +1,16 @@
+.queue {
+  display: flex;
+  justify-content: center;
+  margin-top: 48px;
+}
+
+.wrapper {
+  display: flex;
+  justify-content: space-between;
+  width: 829px;
+  margin: auto;
+}
+
+.input {
+  width: 377px;
+}
