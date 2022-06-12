@@ -1,5 +1,6 @@
-import React, { ChangeEvent, useState } from "react";
+import React, { ChangeEvent, SyntheticEvent, useState } from "react";
 import { ElementStates } from "../../types/element-states";
+import { LinkedList } from "../../utils/LinkedListNode";
 import { Button } from "../ui/button/button";
 import { Circle } from "../ui/circle/circle";
 import { ArrowIcon } from "../ui/icons/arrow-icon";
@@ -7,8 +8,21 @@ import { Input } from "../ui/input/input";
 import { SolutionLayout } from "../ui/solution-layout/solution-layout";
 import styles from "./list-page.module.css";
 
+enum LinkedListActionsEnum {
+  ADD_HEAD = "addHead",
+  ADD_TAIL = "addTail",
+  RMV_HEAD = "rmvHead",
+  RMV_TAIL = "rmvTail",
+  ADD_BY_INDEX = "addByIndex",
+  RMV_BY_INDEX = "rmvByIndex",
+}
+
+const linkedList = new LinkedList(
+  new Array(6).fill(0, 0, 6).map((i) => i + Math.ceil(Math.random() * 100))
+);
+
 export const ListPage: React.FC = () => {
-  const [list, setList] = useState(["0", "34", "8", "1"]);
+  const [list, setList] = useState(linkedList.arrayedList);
   const [value, setValue] = useState("");
   const [index, setIndex] = useState("");
   const [topSmallCircleIndex, setTopSmallCircleIndex] = useState(-1);
@@ -17,29 +31,44 @@ export const ListPage: React.FC = () => {
   const [changingIndexes, setChangingIndexes] = useState<number[]>([]);
   const [smallCircleLetter, setSmallCircleLetter] = useState("");
 
-  const [btnDisable, setBtnDisable] = useState<
-    | "addHead"
-    | "addTail"
-    | "rmvHead"
-    | "rmvTail"
-    | "addByIndex"
-    | "rmvByIndex"
-    | ""
-  >("");
+  const [btnDisable, setBtnDisable] = useState<LinkedListActionsEnum | "">("");
+
+  function addToHead() {
+    if (!value) return;
+
+    setBtnDisable(LinkedListActionsEnum.ADD_HEAD);
+
+    linkedList.prepend(value);
+    setTopSmallCircleIndex(0);
+    setSmallCircleLetter(value);
+
+    setTimeout(() => {
+      setList(linkedList.arrayedList);
+      setTopSmallCircleIndex(-1);
+      setSmallCircleLetter("");
+      setModifiedIndex(0);
+
+      setTimeout(() => {
+        setModifiedIndex(-1);
+        setBtnDisable("");
+      }, 500);
+    }, 500);
+  }
 
   function addToTail() {
     if (!value) return;
-    setBtnDisable("addTail");
+
+    setBtnDisable(LinkedListActionsEnum.ADD_TAIL);
+
+    linkedList.append(value);
     setTopSmallCircleIndex(list.length - 1);
     setSmallCircleLetter(value);
 
     setTimeout(() => {
-      const copy = [...list];
-      copy.push(value);
+      setList(linkedList.arrayedList);
       setTopSmallCircleIndex(-1);
       setSmallCircleLetter("");
-      setModifiedIndex(copy.length - 1);
-      setList(copy);
+      setModifiedIndex(linkedList.arrayedList.length - 1);
 
       setTimeout(() => {
         setModifiedIndex(-1);
@@ -48,214 +77,251 @@ export const ListPage: React.FC = () => {
     }, 500);
   }
 
-  function addToHead() {
-    if (!value) return;
-    setBtnDisable("addHead");
-    setTopSmallCircleIndex(0);
-    setSmallCircleLetter(value);
+  function removeFromHead() {
+    setBtnDisable(LinkedListActionsEnum.RMV_HEAD);
+
+    linkedList.deleteHead();
+    setBottomSmallCircleIndex(0);
+    setSmallCircleLetter(list[0] as string);
+    setList(
+      list.map((item, i) => {
+        if (i === 0) {
+          item = "";
+          return item;
+        } else {
+          return item;
+        }
+      })
+    );
 
     setTimeout(() => {
-      const copy = [...list];
-      copy.splice(0, 0, value);
-      setTopSmallCircleIndex(-1);
+      setList(linkedList.arrayedList);
+      setBottomSmallCircleIndex(-1);
       setSmallCircleLetter("");
-      setModifiedIndex(0);
-      setList(copy);
-
-      setTimeout(() => {
-        setModifiedIndex(-1);
-        setBtnDisable("");
-      }, 500);
+      setBtnDisable("");
     }, 500);
   }
 
   function removeFromTail() {
-    setBtnDisable("rmvTail");
-    const copy = [...list];
-    setSmallCircleLetter(copy[copy.length - 1]);
-    copy[copy.length - 1] = "";
-    setBottomSmallCircleIndex(copy.length - 1);
-    setList([...copy]);
+    setBtnDisable(LinkedListActionsEnum.RMV_TAIL);
+
+    linkedList.deleteTail();
+    setBottomSmallCircleIndex(list.length - 1);
+    setSmallCircleLetter(list[list.length - 1] as string);
+    setList(
+      list.map((item, i) => {
+        if (i === list.length - 1) {
+          item = "";
+          return item;
+        } else {
+          return item;
+        }
+      })
+    );
 
     setTimeout(() => {
-      copy.pop();
+      setList(linkedList.arrayedList);
       setBottomSmallCircleIndex(-1);
       setSmallCircleLetter("");
-      setList([...copy]);
       setBtnDisable("");
-    }, 1000);
-  }
-
-  function removeFromHead() {
-    setBtnDisable("rmvHead");
-    const copy = [...list];
-    setSmallCircleLetter(copy[0]);
-    copy[0] = "";
-    setBottomSmallCircleIndex(0);
-    setList([...copy]);
-
-    setTimeout(() => {
-      copy.shift();
-      setBottomSmallCircleIndex(-1);
-      setSmallCircleLetter("");
-      setList([...copy]);
-      setBtnDisable("");
-    }, 1000);
-  }
-
-  function removeByIndex() {
-    if (index === "" || +index < 0 || +index >= list.length) return;
-    setBtnDisable("rmvByIndex");
-
-    let counter = 1;
-    const arr: number[] = [];
-    arr.push(0);
-    setChangingIndexes([...arr]);
-
-    const interval = setInterval(() => {
-      if ((counter - 1).toString() === index) {
-        clearInterval(interval);
-        const copy = [...list];
-
-        setBottomSmallCircleIndex(+index);
-        setSmallCircleLetter(copy[+index]);
-
-        copy[+index] = "";
-        arr.pop();
-
-        setList([...copy]);
-        setChangingIndexes([...arr]);
-
-        setTimeout(() => {
-          copy.splice(+index, 1);
-          setChangingIndexes([]);
-          setBottomSmallCircleIndex(-1);
-          setList([...copy]);
-          setBtnDisable("");
-        }, 1000);
-        return;
-      }
-
-      arr.push(counter);
-      setChangingIndexes([...arr]);
-
-      counter++;
-    }, 1000);
+    }, 500);
   }
 
   function addByIndex() {
-    if (index === "" || +index < 0 || +index >= list.length) return;
-    setBtnDisable("addByIndex");
+    if (
+      !index ||
+      !value ||
+      parseInt(index) < 0 ||
+      parseInt(index) >= list.length
+    ) {
+      return;
+    }
 
-    const arr: number[] = [];
-    arr.push(0);
-    setChangingIndexes([...arr]);
-
-    setSmallCircleLetter(value);
-    setTopSmallCircleIndex(0);
+    setBtnDisable(LinkedListActionsEnum.ADD_BY_INDEX);
+    linkedList.addByIndex(value, parseInt(index));
     let counter = 0;
-
+    setTopSmallCircleIndex(0);
+    setSmallCircleLetter(value);
+    const arr: number[] = [];
     const interval = setInterval(() => {
-      if (counter.toString() === index) {
-        clearInterval(interval);
+      if (counter === parseInt(index)) {
+        setTopSmallCircleIndex(-1);
+        setSmallCircleLetter("");
 
         setChangingIndexes([]);
-        setTopSmallCircleIndex(-1);
-        setModifiedIndex(counter);
-        const copy = [...list];
-        copy.splice(counter, 0, value);
-        setList([...copy]);
+        setModifiedIndex(parseInt(index));
+        setList(linkedList.arrayedList);
+
         setTimeout(() => {
           setModifiedIndex(-1);
-          setSmallCircleLetter("");
           setBtnDisable("");
-        }, 1000);
+        }, 500);
+
+        clearInterval(interval);
         return;
       }
 
       arr.push(counter);
       setChangingIndexes([...arr]);
-      setTopSmallCircleIndex(counter + 1);
-
       counter++;
-    }, 1000);
+      setTopSmallCircleIndex(counter);
+    }, 500);
   }
 
+  function removeByIndex() {
+    if (!index || parseInt(index) < 0 || parseInt(index) >= list.length) return;
+
+    setBtnDisable(LinkedListActionsEnum.RMV_BY_INDEX);
+
+    linkedList.deleteByIndex(parseInt(index));
+    const arr = [0];
+    let counter = 0;
+    setChangingIndexes([...arr]);
+
+    const interval = setInterval(() => {
+      if (counter === parseInt(index)) {
+        setBottomSmallCircleIndex(parseInt(index));
+        setSmallCircleLetter(list[parseInt(index)] as string);
+        arr.pop();
+        setChangingIndexes([...arr]);
+        setList(
+          list.map((item, i) => {
+            if (i === parseInt(index)) {
+              item = "";
+              return item;
+            } else {
+              return item;
+            }
+          })
+        );
+
+        clearInterval(interval);
+
+        setTimeout(() => {
+          setChangingIndexes([]);
+          setBottomSmallCircleIndex(-1);
+          setSmallCircleLetter("");
+          setList(linkedList.arrayedList);
+          setBtnDisable("");
+        }, 500);
+        return;
+      }
+
+      counter++;
+      arr.push(counter);
+      setChangingIndexes([...arr]);
+    }, 500);
+  }
   function applyCircleState(index: number): ElementStates {
     if (index === modifiedIndex) return ElementStates.Modified;
     if (changingIndexes.includes(index)) return ElementStates.Changing;
     return ElementStates.Default;
   }
 
+  function handleSubmit(e: SyntheticEvent<HTMLFormElement, SubmitEvent>) {
+    e.preventDefault();
+
+    const submitter = e.nativeEvent.submitter as HTMLButtonElement;
+    switch (submitter.name) {
+      case LinkedListActionsEnum.ADD_HEAD:
+        addToHead();
+        break;
+      case LinkedListActionsEnum.ADD_TAIL:
+        addToTail();
+        break;
+      case LinkedListActionsEnum.RMV_HEAD:
+        removeFromHead();
+        break;
+      case LinkedListActionsEnum.RMV_TAIL:
+        removeFromTail();
+        break;
+      case LinkedListActionsEnum.ADD_BY_INDEX:
+        addByIndex();
+        break;
+      case LinkedListActionsEnum.RMV_BY_INDEX:
+        removeByIndex();
+        break;
+      default:
+        break;
+    }
+  }
+
   return (
     <SolutionLayout title="Связный список">
-      <div className={styles.box}>
-        <div>
+      <form onSubmit={handleSubmit}>
+        <div className={styles.box}>
+          <div>
+            <Input
+              extraClass={styles.input}
+              maxLength={4}
+              placeholder="Введите значение"
+              value={value}
+              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                setValue(e.target.value)
+              }
+            />
+            <span>Максимум - 4 символа</span>
+          </div>
+          <Button
+            type="submit"
+            name={LinkedListActionsEnum.ADD_HEAD}
+            isLoader={btnDisable === LinkedListActionsEnum.ADD_HEAD}
+            disabled={!!btnDisable}
+            text="Добавить в head"
+          />
+          <Button
+            type="submit"
+            name={LinkedListActionsEnum.ADD_TAIL}
+            isLoader={btnDisable === LinkedListActionsEnum.ADD_TAIL}
+            disabled={!!btnDisable}
+            text="Добавить в tail"
+          />
+          <Button
+            type="submit"
+            name={LinkedListActionsEnum.RMV_HEAD}
+            isLoader={btnDisable === LinkedListActionsEnum.RMV_HEAD}
+            disabled={!!btnDisable}
+            text="Удалить из head"
+          />
+          <Button
+            type="submit"
+            name={LinkedListActionsEnum.RMV_TAIL}
+            isLoader={btnDisable === LinkedListActionsEnum.RMV_TAIL}
+            disabled={!!btnDisable}
+            text="Удалить из tail"
+          />
+        </div>
+        <div className={styles.box}>
           <Input
             extraClass={styles.input}
-            maxLength={4}
-            placeholder="Введите значение"
-            value={value}
+            placeholder="Введите индекс"
+            value={index}
+            type="number"
             onChange={(e: ChangeEvent<HTMLInputElement>) =>
-              setValue(e.target.value)
+              setIndex(e.target.value)
             }
           />
-          <span>Максимум - 4 символа</span>
+          <Button
+            type="submit"
+            name={LinkedListActionsEnum.ADD_BY_INDEX}
+            isLoader={btnDisable === LinkedListActionsEnum.ADD_BY_INDEX}
+            disabled={!!btnDisable}
+            text="Добавить по индексу"
+            extraClass={styles.largeBtn}
+          />
+          <Button
+            type="submit"
+            name={LinkedListActionsEnum.RMV_BY_INDEX}
+            isLoader={btnDisable === LinkedListActionsEnum.RMV_BY_INDEX}
+            disabled={!!btnDisable}
+            text="Удалить по индексу"
+            extraClass={styles.largeBtn}
+          />
         </div>
-        <Button
-          disabled={!!btnDisable}
-          isLoader={btnDisable === "addHead"}
-          text="Добавить в head"
-          onClick={addToHead}
-        />
-        <Button
-          disabled={!!btnDisable}
-          isLoader={btnDisable === "addTail"}
-          text="Добавить в tail"
-          onClick={addToTail}
-        />
-        <Button
-          disabled={!!btnDisable}
-          isLoader={btnDisable === "rmvHead"}
-          text="Удалить из head"
-          onClick={removeFromHead}
-        />
-        <Button
-          disabled={!!btnDisable}
-          isLoader={btnDisable === "rmvTail"}
-          text="Удалить из tail"
-          onClick={removeFromTail}
-        />
-      </div>
-
-      <div className={styles.box}>
-        <Input
-          extraClass={styles.input}
-          placeholder="Введите индекс"
-          value={index}
-          type="number"
-          onChange={(e: ChangeEvent<HTMLInputElement>) =>
-            setIndex(e.target.value)
-          }
-        />
-        <Button
-          disabled={!!btnDisable}
-          isLoader={btnDisable === "addByIndex"}
-          text="Добавить по индексу"
-          onClick={addByIndex}
-          extraClass={styles.largeBtn}
-        />
-        <Button
-          disabled={!!btnDisable}
-          isLoader={btnDisable === "rmvByIndex"}
-          text="Удалить по индексу"
-          onClick={removeByIndex}
-          extraClass={styles.largeBtn}
-        />
-      </div>
+      </form>
 
       <div className={styles.listWrapper}>
-        {list.map((item, i) => {
+        {list.map((item: any, i) => {
           return (
             <div className={styles.circles} key={i}>
               {i === topSmallCircleIndex && (
@@ -270,14 +336,8 @@ export const ListPage: React.FC = () => {
                 <Circle
                   index={i}
                   letter={item}
-                  tail={`${
-                    i === list.length - 1 && bottomSmallCircleIndex === -1
-                      ? "tail"
-                      : ""
-                  }`}
-                  head={`${
-                    i === 0 && topSmallCircleIndex === -1 ? "head" : ""
-                  }`}
+                  tail={`${i === list.length - 1 ? "tail" : ""}`}
+                  head={`${i === 0 ? "head" : ""}`}
                   state={applyCircleState(i)}
                 />{" "}
                 <ArrowIcon />

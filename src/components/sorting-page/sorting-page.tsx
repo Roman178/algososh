@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useState } from "react";
+import React, { ChangeEvent, SyntheticEvent, useState } from "react";
 import { ElementStates } from "../../types/element-states";
 import { Button } from "../ui/button/button";
 import { Column } from "../ui/column/column";
@@ -407,9 +407,22 @@ export const SortingPage: React.FC = () => {
     }, 300);
   }
 
+  function handleSubmit(e: SyntheticEvent<HTMLFormElement, SubmitEvent>) {
+    e.preventDefault();
+
+    const submitter = e.nativeEvent.submitter as HTMLButtonElement;
+    if (submitter.name === SortingType.ASC) {
+      handleSortingTypeClick(SortingType.ASC);
+    } else if (submitter.name === SortingType.DESC) {
+      handleSortingTypeClick(SortingType.DESC);
+    } else {
+      randomArr();
+    }
+  }
+
   return (
     <SolutionLayout title="Сортировка массива">
-      <div className={styles.wrapper}>
+      <form onSubmit={handleSubmit} className={styles.wrapper}>
         <RadioInput
           label={RadioValues.SELECTION_SORT}
           value={RadioValues.SELECTION_SORT}
@@ -423,26 +436,29 @@ export const SortingPage: React.FC = () => {
           onChange={handleChangeRadio}
         />
         <Button
+          type="submit"
           extraClass={styles.btn}
           text="По возрастанию"
-          onClick={() => handleSortingTypeClick(SortingType.ASC)}
           disabled={!!btnDisabled}
+          name={SortingType.ASC}
           isLoader={btnDisabled === "asc"}
         />
         <Button
+          type="submit"
           extraClass={styles.btn}
           text="По убыванию"
-          onClick={() => handleSortingTypeClick(SortingType.DESC)}
+          name={SortingType.DESC}
           disabled={!!btnDisabled}
           isLoader={btnDisabled === "desc"}
         />
         <Button
+          type="submit"
           extraClass={styles.btn}
           text="Новый массив"
-          onClick={() => randomArr()}
+          name="randomArr"
           disabled={!!btnDisabled}
         />
-      </div>
+      </form>
       <div className={styles.columnBox}>
         {arr.map((item, i) => {
           return (

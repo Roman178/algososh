@@ -1,11 +1,14 @@
-import React, { ChangeEvent, useState } from "react";
+import React, { ChangeEvent, SyntheticEvent, useState } from "react";
 import { ElementStates } from "../../types/element-states";
+import { Stack } from "../../utils/Stack";
 import { Button } from "../ui/button/button";
 import { Circle } from "../ui/circle/circle";
 import { Input } from "../ui/input/input";
 import { SolutionLayout } from "../ui/solution-layout/solution-layout";
 import styles from "./stack-page.module.css";
 import { IStackCircle } from "./stack-page.types";
+
+const stackInst = new Stack<IStackCircle>();
 
 export const StackPage: React.FC = () => {
   const [stack, setStack] = useState<IStackCircle[]>([]);
@@ -19,40 +22,48 @@ export const StackPage: React.FC = () => {
   function push() {
     if (!value) return;
     setBtnDisabled("add");
-    const clone = [...stack];
-    clone.push({ letter: value, state: ElementStates.Changing });
-    setStack([...clone]);
+    stackInst.push({ letter: value, state: ElementStates.Changing });
+    setStack([...stackInst.elements]);
 
     setTimeout(() => {
-      clone[clone.length - 1] = { letter: value, state: ElementStates.Default };
-      setStack([...clone]);
+      stackInst.setByIndex(stackInst.size - 1, {
+        letter: value,
+        state: ElementStates.Default,
+      });
+      setStack([...stackInst.elements]);
       setBtnDisabled("");
     }, 500);
   }
 
   function pop() {
     setBtnDisabled("rmv");
-    const clone = [...stack];
-    clone[clone.length - 1] = {
-      ...clone[clone.length - 1],
-      state: ElementStates.Changing,
-    };
-    setStack([...clone]);
 
+    stackInst.setByIndex(stackInst.size - 1, {
+      ...stackInst.elements[stackInst.size - 1],
+      state: ElementStates.Changing,
+    });
+    setStack([...stackInst.elements]);
     setTimeout(() => {
-      clone.pop();
-      setStack([...clone]);
+      stackInst.pop();
+      setStack([...stackInst.elements]);
       setBtnDisabled("");
     }, 500);
   }
 
   function clearStack() {
-    setStack([]);
+    stackInst.clear();
+    setStack([...stackInst.elements]);
+  }
+
+  function handleSubmit(e: SyntheticEvent<HTMLFormElement, SubmitEvent>) {
+    e.preventDefault();
+    const submitter = e.nativeEvent.submitter as HTMLButtonElement;
+    submitter.name === "add" ? push() : pop();
   }
 
   return (
     <SolutionLayout title="Стек">
-      <div className={styles.wrapper}>
+      <form onSubmit={handleSubmit} className={styles.wrapper}>
         <Input
           maxLength={4}
           extraClass={styles.input}
@@ -60,19 +71,21 @@ export const StackPage: React.FC = () => {
           onChange={handleChange}
         />
         <Button
+          type="submit"
           text="Добавить"
-          onClick={push}
+          name="add"
           disabled={!!btnDisabled}
           isLoader={btnDisabled === "add"}
         />
         <Button
+          type="submit"
           text="Удалить"
-          onClick={pop}
+          name="rmv"
           disabled={!!btnDisabled}
           isLoader={btnDisabled === "rmv"}
         />
         <Button text="Очистить" onClick={clearStack} disabled={!!btnDisabled} />
-      </div>
+      </form>
 
       <div className={styles.stack}>
         {stack.length > 0 &&

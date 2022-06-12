@@ -1,9 +1,12 @@
 import React, { SyntheticEvent, useState } from "react";
+import { Fibonacci } from "../../utils/Fibonacci";
 import { Button } from "../ui/button/button";
 import { Circle } from "../ui/circle/circle";
 import { Input } from "../ui/input/input";
 import { SolutionLayout } from "../ui/solution-layout/solution-layout";
 import styles from "./fibonacci-page.module.css";
+
+const fibonacci = new Fibonacci();
 
 export const FibonacciPage: React.FC = () => {
   const [fibNums, setFibNums] = useState<number[]>([]);
@@ -21,37 +24,37 @@ export const FibonacciPage: React.FC = () => {
     }
   }
 
-  function renderFibNums() {
+  function renderFibNums(e: SyntheticEvent<HTMLFormElement>) {
+    e.preventDefault();
     setIsLoader(true);
+
+    const fibNums = fibonacci.getFibonacciNumbers(currentNum);
     const arr: number[] = [];
+    let counter = 0;
 
     const interval = setInterval(() => {
-      if (arr.length.toString() === currentNum) {
+      if (fibNums.length - 1 === arr.length) {
         clearInterval(interval);
         setIsLoader(false);
+        return;
       }
-
-      if (arr.length === 0 || arr.length === 1) {
-        arr.push(1);
-      } else {
-        arr.push(arr[arr.length - 1] + arr[arr.length - 2]);
-      }
-
+      arr.push(fibNums[counter]);
       setFibNums([...arr]);
+      counter++;
     }, 500);
   }
 
   return (
     <SolutionLayout title="Последовательность Фибоначчи">
-      <div className={styles.wrapper}>
+      <form onSubmit={renderFibNums} className={styles.wrapper}>
         <Input value={currentNum} onInput={handleInput} />
         <Button
+          type="submit"
           isLoader={isLoader}
-          onClick={renderFibNums}
           text="Рассчитать"
           disabled={isBtnDisabled}
         ></Button>
-      </div>
+      </form>
       <p>Максимальное число - 19</p>
       <div className={styles.circles}>
         {fibNums.map((num, i) => {

@@ -1,136 +1,130 @@
-import React, { ChangeEvent, useState } from "react";
+import React, { ChangeEvent, SyntheticEvent, useState } from "react";
 import { ElementStates } from "../../types/element-states";
+import { Queue } from "../../utils/Queue";
 import { Button } from "../ui/button/button";
 import { Circle } from "../ui/circle/circle";
 import { Input } from "../ui/input/input";
 import { SolutionLayout } from "../ui/solution-layout/solution-layout";
 import styles from "./queue-page.module.css";
 import { IQueueItem } from "./queue-page.types";
+import { take } from "rxjs/operators";
+
+const queueInst = new Queue<IQueueItem>();
 
 export const QueuePage: React.FC = () => {
   const [value, setValue] = useState("");
   const [queue, setQueue] = useState<IQueueItem[]>(Array(6).fill({}, 0, 6));
   const [headIndex, setHeadIndex] = useState(-1);
   const [tailIndex, setTailIndex] = useState(-1);
-  const [tailIsShown, setTailIsShown] = useState(true);
-  const [btnDisabled, setBtnDisabled] = useState<"" | "add" | "rmv">("");
+  const [btnDisabled, setBtnDisabled] = useState<"" | "enqueue" | "dequeue">(
+    ""
+  );
 
   function enqueue() {
-    if (tailIndex === queue.length - 1) return;
-    setBtnDisabled("add");
-    const copy = [...queue];
-
-    if (!tailIsShown) {
-      copy[tailIndex] = { letter: value, state: ElementStates.Changing };
-      setTailIsShown(true);
-      setQueue([...copy]);
-
-      setTimeout(() => {
-        copy[tailIndex] = { ...copy[tailIndex], state: ElementStates.Default };
-        setQueue([...copy]);
-        setBtnDisabled("");
-      }, 500);
-
+    if (
+      tailIndex === queue.length - 1 ||
+      headIndex === queue.length - 1 ||
+      !value
+    ) {
       return;
     }
 
-    copy[tailIndex + 1] = {
-      ...copy[tailIndex + 1],
-      state: ElementStates.Changing,
-    };
+    setBtnDisabled("enqueue");
 
-    setTimeout(() => {
-      copy[tailIndex + 1] = {
-        ...copy[tailIndex + 1],
-        state: ElementStates.Default,
-      };
-      setQueue([...copy]);
-      setBtnDisabled("");
-    }, 500);
+    queueInst.enqueue({
+      firstTick: { state: ElementStates.Changing, letter: "" },
+      secondTick: { state: ElementStates.Changing, letter: value },
+      thirdTick: { state: ElementStates.Default, letter: value },
+    });
 
-    setTailIndex(tailIndex + 1);
-    copy[tailIndex + 1] = { ...copy[tailIndex + 1], letter: value };
-    if (headIndex === -1) {
-      setHeadIndex(headIndex + 1);
-    }
+    setQueue(queueInst.elements);
+    setTailIndex(queueInst.tailIndex);
+    setHeadIndex(queueInst.headIndex);
 
-    setQueue([...copy]);
+    let counter = 0;
+    queueInst.currentQueue$.pipe(take(2)).subscribe((currQueue: any) => {
+      setQueue([...currQueue]);
+      setTailIndex(queueInst.tailIndex);
+      setHeadIndex(queueInst.headIndex);
+      counter++;
+      if (counter === 2) setBtnDisabled("");
+    });
   }
 
   function dequeue() {
     if (tailIndex === -1) return;
-    setBtnDisabled("rmv");
-    const copy = [...queue];
 
-    if (tailIndex === headIndex) {
-      if (!tailIsShown) return;
-      copy[headIndex] = { ...copy[headIndex], state: ElementStates.Changing };
-      setQueue([...copy]);
+    setBtnDisabled("dequeue");
 
-      setTimeout(() => {
-        copy[headIndex] = { letter: "", state: ElementStates.Default };
-        setTailIsShown(false);
-        setQueue([...copy]);
-        setBtnDisabled("");
-      }, 500);
+    queueInst.dequeue({
+      firstTick: { ...queue[headIndex], state: ElementStates.Changing },
+      secondTick: { letter: "", state: ElementStates.Default },
+    });
 
-      return;
-    }
+    setQueue(queueInst.elements);
+    setHeadIndex(queueInst.headIndex);
 
-    copy[headIndex] = { ...copy[headIndex], state: ElementStates.Changing };
-    setQueue([...copy]);
-
-    setTimeout(() => {
-      copy[headIndex] = { letter: "", state: ElementStates.Default };
-      setHeadIndex(headIndex + 1);
-      setQueue([...copy]);
+    queueInst.currentQueue$.pipe(take(1)).subscribe((currQueue: any) => {
+      setQueue([...currQueue]);
+      setHeadIndex(queueInst.headIndex);
+      setTailIndex(queueInst.tailIndex);
       setBtnDisabled("");
-    }, 500);
+    });
   }
 
   function clearQueue() {
-    setHeadIndex(-1);
-    setTailIndex(-1);
-    setTailIsShown(true);
-    setQueue(Array(6).fill({}, 0, 6));
+    queueInst.clear();
+    setQueue([...queueInst.elements]);
+    setHeadIndex(queueInst.headIndex);
+    setTailIndex(queueInst.tailIndex);
   }
 
   function handleChange(e: ChangeEvent<HTMLInputElement>) {
     setValue(e.target.value);
   }
 
+  function handleSubmit(e: SyntheticEvent<HTMLFormElement, SubmitEvent>) {
+    e.preventDefault();
+
+    const submitter = e.nativeEvent.submitter as HTMLButtonElement;
+    submitter.name === "enqueue" ? enqueue() : dequeue();
+  }
+
   return (
     <SolutionLayout title="Очередь">
-      <div className={styles.wrapper}>
+      <form onSubmit={handleSubmit} className={styles.wrapper}>
         <Input
           value={value}
           onChange={handleChange}
           extraClass={styles.input}
         />
         <Button
+          type="submit"
           text="Добавить"
-          onClick={enqueue}
+          name="enqueue"
           disabled={!!btnDisabled}
-          isLoader={btnDisabled === "add"}
+          isLoader={btnDisabled === "enqueue"}
         />
         <Button
+          type="submit"
           text="Удалить"
-          onClick={dequeue}
+          name="dequeue"
           disabled={!!btnDisabled}
-          isLoader={btnDisabled === "rmv"}
+          isLoader={btnDisabled === "dequeue"}
         />
         <Button text="Очистить" onClick={clearQueue} disabled={!!btnDisabled} />
-      </div>
+      </form>
       <div className={styles.queue}>
         {queue.length > 0 &&
           queue.map((el, i) => {
             return (
               <Circle
                 key={i}
+                index={i}
                 state={el.state}
                 letter={el.letter}
                 head={`${i === headIndex ? "head" : ""}`}
-                tail={`${i === tailIndex && tailIsShown ? "tail" : ""}`}
+                tail={`${i === tailIndex ? "tail" : ""}`}
               />
             );
           })}
