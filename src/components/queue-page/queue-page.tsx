@@ -1,13 +1,12 @@
 import React, { ChangeEvent, SyntheticEvent, useState } from "react";
 import { ElementStates } from "../../types/element-states";
-import { Queue } from "../../utils/Queue";
+import { Queue } from "./Queue";
 import { Button } from "../ui/button/button";
 import { Circle } from "../ui/circle/circle";
 import { Input } from "../ui/input/input";
 import { SolutionLayout } from "../ui/solution-layout/solution-layout";
 import styles from "./queue-page.module.css";
 import { IQueueItem } from "./queue-page.types";
-import { take } from "rxjs/operators";
 
 const queueInst = new Queue<IQueueItem>();
 
@@ -28,55 +27,51 @@ export const QueuePage: React.FC = () => {
     ) {
       return;
     }
-
     setBtnDisabled("enqueue");
+    queueInst.enqueue({ state: ElementStates.Default, letter: value });
 
-    queueInst.enqueue({
-      firstTick: { state: ElementStates.Changing, letter: "" },
-      secondTick: { state: ElementStates.Changing, letter: value },
-      thirdTick: { state: ElementStates.Default, letter: value },
-    });
+    let arr = [...queue];
+    arr[tailIndex + 1] = { letter: "", state: ElementStates.Changing };
+    setQueue([...arr]);
 
-    setQueue(queueInst.elements);
-    setTailIndex(queueInst.tailIndex);
-    setHeadIndex(queueInst.headIndex);
-
-    let counter = 0;
-    queueInst.currentQueue$.pipe(take(2)).subscribe((currQueue: any) => {
-      setQueue([...currQueue]);
-      setTailIndex(queueInst.tailIndex);
-      setHeadIndex(queueInst.headIndex);
-      counter++;
-      if (counter === 2) setBtnDisabled("");
-    });
+    setTimeout(() => {
+      setTailIndex(queueInst.tail);
+      setHeadIndex(queueInst.head);
+      arr = [...queueInst.elements];
+      arr[tailIndex + 1] = {
+        ...arr[tailIndex + 1],
+        state: ElementStates.Changing,
+      };
+      setQueue([...arr]);
+      setTimeout(() => {
+        setQueue([...queueInst.elements]);
+        setBtnDisabled("");
+      }, 500);
+    }, 500);
   }
 
   function dequeue() {
     if (tailIndex === -1) return;
-
+    queueInst.dequeue();
     setBtnDisabled("dequeue");
 
-    queueInst.dequeue({
-      firstTick: { ...queue[headIndex], state: ElementStates.Changing },
-      secondTick: { letter: "", state: ElementStates.Default },
-    });
+    let arr = [...queue];
+    arr[headIndex] = { ...arr[headIndex], state: ElementStates.Changing };
+    setQueue([...arr]);
 
-    setQueue(queueInst.elements);
-    setHeadIndex(queueInst.headIndex);
-
-    queueInst.currentQueue$.pipe(take(1)).subscribe((currQueue: any) => {
-      setQueue([...currQueue]);
-      setHeadIndex(queueInst.headIndex);
-      setTailIndex(queueInst.tailIndex);
+    setTimeout(() => {
+      setQueue([...queueInst.elements]);
+      setHeadIndex(queueInst.head);
+      setTailIndex(queueInst.tail);
       setBtnDisabled("");
-    });
+    }, 500);
   }
 
   function clearQueue() {
     queueInst.clear();
     setQueue([...queueInst.elements]);
-    setHeadIndex(queueInst.headIndex);
-    setTailIndex(queueInst.tailIndex);
+    setHeadIndex(queueInst.head);
+    setTailIndex(queueInst.tail);
   }
 
   function handleChange(e: ChangeEvent<HTMLInputElement>) {
@@ -97,6 +92,7 @@ export const QueuePage: React.FC = () => {
           value={value}
           onChange={handleChange}
           extraClass={styles.input}
+          maxLength={4}
         />
         <Button
           type="submit"

@@ -1,5 +1,5 @@
 import React, { SyntheticEvent, useState } from "react";
-import { Fibonacci } from "../../utils/Fibonacci";
+import { Fibonacci } from "./Fibonacci";
 import { Button } from "../ui/button/button";
 import { Circle } from "../ui/circle/circle";
 import { Input } from "../ui/input/input";
@@ -24,7 +24,7 @@ export const FibonacciPage: React.FC = () => {
     }
   }
 
-  function renderFibNums(e: SyntheticEvent<HTMLFormElement>) {
+  function getFibonacciNumbers(e: SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
     setIsLoader(true);
 
@@ -46,7 +46,7 @@ export const FibonacciPage: React.FC = () => {
 
   return (
     <SolutionLayout title="Последовательность Фибоначчи">
-      <form onSubmit={renderFibNums} className={styles.wrapper}>
+      <form onSubmit={getFibonacciNumbers} className={styles.wrapper}>
         <Input value={currentNum} onInput={handleInput} />
         <Button
           type="submit"

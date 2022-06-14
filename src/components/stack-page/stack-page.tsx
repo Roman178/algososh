@@ -1,6 +1,6 @@
 import React, { ChangeEvent, SyntheticEvent, useState } from "react";
 import { ElementStates } from "../../types/element-states";
-import { Stack } from "../../utils/Stack";
+import { Stack } from "./Stack";
 import { Button } from "../ui/button/button";
 import { Circle } from "../ui/circle/circle";
 import { Input } from "../ui/input/input";

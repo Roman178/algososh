@@ -1,4 +1,4 @@
-import React, { ChangeEvent, SyntheticEvent, useState } from "react";
+import React, { ChangeEvent, SyntheticEvent, useEffect, useState } from "react";
 import { ElementStates } from "../../types/element-states";
 import { Button } from "../ui/button/button";
 import { Column } from "../ui/column/column";
@@ -33,6 +33,11 @@ export const SortingPage: React.FC = () => {
 
     setArr(resultArr);
   }
+
+  useEffect(() => {
+    randomArr();   
+  }, [])
+  
 
   function handleSortingTypeClick(sortType: SortingType) {
     if (arr.length === 0) return;

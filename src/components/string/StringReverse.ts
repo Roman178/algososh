@@ -1,5 +1,5 @@
-import { ILettersToRender } from "../components/string/string.types";
-import { ElementStates } from "../types/element-states";
+import { ILettersToRender } from "./string.types";
+import { ElementStates } from "../../types/element-states";
 
 export class StringReverse {
   public first: number | null = null;

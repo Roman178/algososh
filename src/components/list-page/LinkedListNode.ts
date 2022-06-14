@@ -13,18 +13,22 @@ export class LinkedList {
   public tail: null | LinkedListNode<string> = null;
 
   public get arrayedList() {
-    return this.toArray();
+    return this.toArray() as string[];
   }
 
-  constructor(initArr: any[]) {
+  constructor(initArr: string[]) {
     this.head = this._toLinkedList(initArr);
     this.tail = this._findTail();
   }
 
-  private _toLinkedList(arr: any[]) {
+  private _toLinkedList(arr: string[]): LinkedListNode<string> | null {
     return arr
       .reverse()
-      .reduce((acc, curr) => new LinkedListNode(curr, acc), null);
+      .reduce(
+        (acc: LinkedListNode<string> | null, curr: string) =>
+          new LinkedListNode(curr, acc),
+        null
+      );
   }
 
   private _findTail() {
@@ -79,7 +83,8 @@ export class LinkedList {
       this.head = new LinkedListNode(value, this.head);
       return;
     }
-    const previous: any = this._getByIndex(index - 1) || this._findTail();
+    const previous = (this._getByIndex(index - 1) ||
+      this._findTail()) as LinkedListNode<string>;
     const node = new LinkedListNode(value, previous?.next);
     previous.next = node;
   }

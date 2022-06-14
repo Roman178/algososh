@@ -1,28 +1,22 @@
 import React, { ChangeEvent, SyntheticEvent, useState } from "react";
 import { ElementStates } from "../../types/element-states";
-import { LinkedList } from "../../utils/LinkedListNode";
+import { LinkedList } from "./LinkedListNode";
 import { Button } from "../ui/button/button";
 import { Circle } from "../ui/circle/circle";
 import { ArrowIcon } from "../ui/icons/arrow-icon";
 import { Input } from "../ui/input/input";
 import { SolutionLayout } from "../ui/solution-layout/solution-layout";
 import styles from "./list-page.module.css";
-
-enum LinkedListActionsEnum {
-  ADD_HEAD = "addHead",
-  ADD_TAIL = "addTail",
-  RMV_HEAD = "rmvHead",
-  RMV_TAIL = "rmvTail",
-  ADD_BY_INDEX = "addByIndex",
-  RMV_BY_INDEX = "rmvByIndex",
-}
+import { LinkedListActionsEnum } from "./list-page.types";
 
 const linkedList = new LinkedList(
-  new Array(6).fill(0, 0, 6).map((i) => i + Math.ceil(Math.random() * 100))
+  new Array(6)
+    .fill(0, 0, 6)
+    .map((i) => (i + Math.ceil(Math.random() * 100)).toString())
 );
 
 export const ListPage: React.FC = () => {
-  const [list, setList] = useState(linkedList.arrayedList);
+  const [list, setList] = useState<string[]>(linkedList.arrayedList);
   const [value, setValue] = useState("");
   const [index, setIndex] = useState("");
   const [topSmallCircleIndex, setTopSmallCircleIndex] = useState(-1);
@@ -321,7 +315,7 @@ export const ListPage: React.FC = () => {
       </form>
 
       <div className={styles.listWrapper}>
-        {list.map((item: any, i) => {
+        {list.map((item, i) => {
           return (
             <div className={styles.circles} key={i}>
               {i === topSmallCircleIndex && (

@@ -5,7 +5,7 @@ import { Button } from "../ui/button/button";
 import { Circle } from "../ui/circle/circle";
 import styles from "./string.module.css";
 import { ILettersToRender } from "./string.types";
-import { StringReverse } from "../../utils/StringReverse";
+import { StringReverse } from "./StringReverse";
 
 const stringReverse = new StringReverse();
 
