@@ -1,0 +1,21 @@
+.columnBox {
+  display: flex;
+  justify-content: center;
+  margin-top: 48px;
+}
+
+.column {
+  margin-right: 10px;
+}
+
+.wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 924px;
+  margin: auto;
+}
+
+.btn {
+  width: 186px;
+}

@@ -1,0 +1,56 @@
+.box {
+  display: flex;
+  align-items: flex-start;
+  width: 952px;
+  justify-content: space-between;
+  margin: auto;
+  margin-bottom: 12px;
+}
+
+.smallCircle {
+}
+
+.circleArrowWrapper {
+  display: flex;
+  align-items: center;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.listWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 35px;
+  height: 250px;
+}
+
+.input {
+  width: 204px;
+}
+
+.largeBtn {
+  width: 362px;
+}
+
+.circles {
+  width: 104px;
+  height: 250px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+}
+
+.topSmallCircle {
+  position: absolute;
+  top: 0;
+  margin-left: 11px;
+}
+
+.bottomSmallCircle {
+  position: absolute;
+  bottom: -30px;
+  margin-left: 11px;
+}

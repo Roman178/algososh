@@ -1,0 +1,15 @@
+.wrapper {
+    display: flex;
+    width: 522px;
+    margin: auto;
+}
+
+.wrapper button {
+    margin-left: 12px;
+}
+
+.circles {
+    display: flex;
+    justify-content: center;
+    margin-top: 120px;
+}
