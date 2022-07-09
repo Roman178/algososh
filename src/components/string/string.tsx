@@ -22,22 +22,24 @@ export const StringComponent: React.FC = () => {
 
   function reverseString(e: SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (!currentString) return;
     setIsLoader(true);
 
     let counter = 0;
     const circleLetters = stringReverse.generateCircleLetters(currentString);
     setCurrentLettersToRender(circleLetters);
-
+    
     const interval = setInterval(() => {
       stringReverse.setFirstAndLastOnTick(counter);
+
+      setCurrentLettersToRender([...stringReverse.getCurrentLetters()]);
+      
+      counter++;
 
       if (stringReverse.isStringReversed) {
         clearInterval(interval);
         setIsLoader(false);
       }
-
-      setCurrentLettersToRender([...stringReverse.getCurrentLetters()]);
-      counter++;
     }, 1000);
   }
 
@@ -45,7 +47,12 @@ export const StringComponent: React.FC = () => {
     <SolutionLayout title="Строка">
       <form onSubmit={reverseString} className={styles.wrapper}>
         <Input maxLength={15} value={currentString} onInput={handleInput} />
-        <Button type="submit" isLoader={isLoader} text="Развернуть"></Button>
+        <Button
+          type="submit"
+          isLoader={isLoader}
+          disabled={!currentString}
+          text="Развернуть"
+        ></Button>
       </form>
       <div className={styles.circles}>
         {currentLettersToRender.map((letterData, i) => {

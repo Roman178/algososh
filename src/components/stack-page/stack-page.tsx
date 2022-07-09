@@ -74,7 +74,7 @@ export const StackPage: React.FC = () => {
           type="submit"
           text="Добавить"
           name="add"
-          disabled={!!btnDisabled}
+          disabled={!!btnDisabled || !value}
           isLoader={btnDisabled === "add"}
         />
         <Button

@@ -32,12 +32,12 @@ export const SortingPage: React.FC = () => {
     }
 
     setArr(resultArr);
+    return resultArr;
   }
 
   useEffect(() => {
-    randomArr();   
-  }, [])
-  
+    randomArr();
+  }, []);
 
   function handleSortingTypeClick(sortType: SortingType) {
     if (arr.length === 0) return;
@@ -62,6 +62,18 @@ export const SortingPage: React.FC = () => {
   }
 
   function sortSelectionDesc() {
+    if (arr.length === 1) {
+      const initArr = [...arr];
+      initArr[0] = { ...initArr[0], state: ElementStates.Changing };
+      setArr([...initArr]);
+      setTimeout(() => {
+        initArr[0] = { ...initArr[0], state: ElementStates.Modified };
+        setArr([...initArr]);
+        setBtnDisabled("");
+      }, 300);
+      return;
+    }
+
     let counter = 1;
     const initArr = [...arr];
     const finishedArr: IColumn[] = [];
@@ -138,6 +150,18 @@ export const SortingPage: React.FC = () => {
   }
 
   function sortSelectionAsc() {
+    if (arr.length === 1) {
+      const initArr = [...arr];
+      initArr[0] = { ...initArr[0], state: ElementStates.Changing };
+      setArr([...initArr]);
+      setTimeout(() => {
+        initArr[0] = { ...initArr[0], state: ElementStates.Modified };
+        setArr([...initArr]);
+        setBtnDisabled("");
+      }, 300);
+      return;
+    }
+
     let counter = 1;
     const initArr = [...arr];
     const finishedArr: IColumn[] = [];
@@ -214,6 +238,18 @@ export const SortingPage: React.FC = () => {
   }
 
   function sortBubbleDesc() {
+    if (arr.length === 1) {
+      const initArr = [...arr];
+      initArr[0] = { ...initArr[0], state: ElementStates.Changing };
+      setArr([...initArr]);
+      setTimeout(() => {
+        initArr[0] = { ...initArr[0], state: ElementStates.Modified };
+        setArr([...initArr]);
+        setBtnDisabled("");
+      }, 300);
+      return;
+    }
+
     const cloneArr: IColumn[] = [...arr];
     cloneArr[0] = { ...cloneArr[0], state: ElementStates.Changing };
     cloneArr[1] = { ...cloneArr[1], state: ElementStates.Changing };
@@ -314,6 +350,18 @@ export const SortingPage: React.FC = () => {
   }
 
   function sortBubbleAsc() {
+    if (arr.length === 1) {
+      const initArr = [...arr];
+      initArr[0] = { ...initArr[0], state: ElementStates.Changing };
+      setArr([...initArr]);
+      setTimeout(() => {
+        initArr[0] = { ...initArr[0], state: ElementStates.Modified };
+        setArr([...initArr]);
+        setBtnDisabled("");
+      }, 300);
+      return;
+    }
+
     const cloneArr: IColumn[] = [...arr];
     cloneArr[0] = { ...cloneArr[0], state: ElementStates.Changing };
     cloneArr[1] = { ...cloneArr[1], state: ElementStates.Changing };
@@ -415,7 +463,10 @@ export const SortingPage: React.FC = () => {
   function handleSubmit(e: SyntheticEvent<HTMLFormElement, SubmitEvent>) {
     e.preventDefault();
 
-    const submitter = e.nativeEvent.submitter as HTMLButtonElement;
+    // In react-testing-library e.nativeEvent.submitter = undefined;
+    // bug-report is opened https://github.com/testing-library/react-testing-library/issues/870
+    // const submitter = e.nativeEvent.submitter as HTMLButtonElement;
+    const submitter = document.activeElement as HTMLButtonElement;
     if (submitter.name === SortingType.ASC) {
       handleSortingTypeClick(SortingType.ASC);
     } else if (submitter.name === SortingType.DESC) {
@@ -427,7 +478,11 @@ export const SortingPage: React.FC = () => {
 
   return (
     <SolutionLayout title="Сортировка массива">
-      <form onSubmit={handleSubmit} className={styles.wrapper}>
+      <form
+        data-testid="test-sorting-form"
+        className={styles.wrapper}
+        onSubmit={handleSubmit}
+      >
         <RadioInput
           label={RadioValues.SELECTION_SORT}
           value={RadioValues.SELECTION_SORT}
