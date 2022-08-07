@@ -1,4 +1,4 @@
-import React, { ChangeEvent, SyntheticEvent, useState } from "react";
+import React, { ChangeEvent, SyntheticEvent, useEffect, useState } from "react";
 import { ElementStates } from "../../types/element-states";
 import { Queue } from "./Queue";
 import { Button } from "../ui/button/button";
@@ -19,6 +19,8 @@ export const QueuePage: React.FC = () => {
     ""
   );
 
+  useEffect(() => () => queueInst.clear(), []);
+
   function enqueue() {
     if (
       tailIndex === queue.length - 1 ||
@@ -35,7 +37,12 @@ export const QueuePage: React.FC = () => {
     setQueue([...arr]);
 
     setTimeout(() => {
-      setTailIndex(queueInst.tail);
+      if (queueInst.tail === -1 && queueInst.head > 0) {
+        setTailIndex(queueInst.head);
+      } else {
+        setTailIndex(queueInst.tail);
+      }
+
       setHeadIndex(queueInst.head);
       arr = [...queueInst.elements];
       arr[tailIndex + 1] = {
@@ -98,7 +105,7 @@ export const QueuePage: React.FC = () => {
           type="submit"
           text="Добавить"
           name="enqueue"
-          disabled={!!btnDisabled}
+          disabled={!!btnDisabled || !value}
           isLoader={btnDisabled === "enqueue"}
         />
         <Button

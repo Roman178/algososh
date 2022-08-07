@@ -260,28 +260,32 @@ export const ListPage: React.FC = () => {
             type="submit"
             name={LinkedListActionsEnum.ADD_HEAD}
             isLoader={btnDisable === LinkedListActionsEnum.ADD_HEAD}
-            disabled={!!btnDisable}
+            disabled={!!btnDisable || !value}
             text="Добавить в head"
           />
           <Button
             type="submit"
             name={LinkedListActionsEnum.ADD_TAIL}
             isLoader={btnDisable === LinkedListActionsEnum.ADD_TAIL}
-            disabled={!!btnDisable}
+            disabled={!!btnDisable || !value}
             text="Добавить в tail"
           />
           <Button
             type="submit"
             name={LinkedListActionsEnum.RMV_HEAD}
             isLoader={btnDisable === LinkedListActionsEnum.RMV_HEAD}
-            disabled={!!btnDisable}
+            disabled={
+              !!btnDisable || (list.length === 1 && list[0] === undefined)
+            }
             text="Удалить из head"
           />
           <Button
             type="submit"
             name={LinkedListActionsEnum.RMV_TAIL}
             isLoader={btnDisable === LinkedListActionsEnum.RMV_TAIL}
-            disabled={!!btnDisable}
+            disabled={
+              !!btnDisable || (list.length === 1 && list[0] === undefined)
+            }
             text="Удалить из tail"
           />
         </div>
@@ -299,7 +303,7 @@ export const ListPage: React.FC = () => {
             type="submit"
             name={LinkedListActionsEnum.ADD_BY_INDEX}
             isLoader={btnDisable === LinkedListActionsEnum.ADD_BY_INDEX}
-            disabled={!!btnDisable}
+            disabled={!!btnDisable || !value || !index}
             text="Добавить по индексу"
             extraClass={styles.largeBtn}
           />
@@ -307,7 +311,11 @@ export const ListPage: React.FC = () => {
             type="submit"
             name={LinkedListActionsEnum.RMV_BY_INDEX}
             isLoader={btnDisable === LinkedListActionsEnum.RMV_BY_INDEX}
-            disabled={!!btnDisable}
+            disabled={
+              !!btnDisable ||
+              !index ||
+              (list.length === 1 && list[0] === undefined)
+            }
             text="Удалить по индексу"
             extraClass={styles.largeBtn}
           />
